@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project 3: Attention and Transformers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #faf9f7;
+      --surface:  #ffffff;
+      --border:   #e2ddd8;
+      --text:     #1a1816;
+      --muted:    #6b6560;
+      --accent:   #2d5a8e;
+      --accent2:  #c0392b;
+      --code-bg:  #f0ede8;
+      --max-w:    780px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+      padding: 0 1rem;
+    }
+
+    /* ── layout ── */
+    .page { max-width: var(--max-w); margin: 0 auto; }
+
+    /* ── header ── */
+    header {
+      border-bottom: 2px solid var(--text);
+      padding: 3.5rem 0 2rem;
+      margin-bottom: 2.5rem;
+    }
+    header .course {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-size: 2.1rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    header .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+    header .meta {
+      margin-top: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ── nav ── */
+    nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem 1.4rem;
+      margin-bottom: 3rem;
+    }
+    nav p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.8rem; }
+    nav a { color: var(--accent); text-decoration: none; font-size: 0.92rem; }
+    nav a:hover { text-decoration: underline; }
+
+    /* ── sections ── */
+    section { margin-bottom: 3.5rem; }
+
+    .part-header {
+      border-top: 3px solid var(--text);
+      padding-top: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+    .part-header .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .part-header h2 {
+      font-size: 1.55rem;
+      font-weight: 600;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 2rem 0 0.6rem;
+    }
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      font-style: italic;
+      margin: 1.4rem 0 0.4rem;
+      color: var(--muted);
+    }
+
+    p { margin-bottom: 1rem; }
+
+    /* ── figures ── */
+    figure {
+      margin: 2rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+    }
+    figure img {
+      width: 100%;
+      display: block;
+      border-radius: 2px;
+    }
+    figcaption {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+    }
+    figcaption strong { font-style: normal; color: var(--text); }
+
+    /* ── tables ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    thead tr { background: var(--text); color: #fff; }
+    thead th {
+      padding: 0.55rem 0.8rem;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+    tbody tr:nth-child(even) { background: var(--code-bg); }
+    tbody tr:nth-child(odd)  { background: var(--surface); }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+    .table-caption {
+      font-size: 0.84rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+      margin-top: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── callout / finding boxes ── */
+    .finding {
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      padding: 0.9rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+    .finding strong { color: var(--accent); }
+
+    /* ── conclusion table ── */
+    .conc-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1.2rem 0; }
+    .conc-table th {
+      background: var(--text); color: #fff;
+      padding: 0.5rem 0.8rem; text-align: left; font-weight: 500;
+    }
+    .conc-table td {
+      padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .conc-table tr:nth-child(even) td { background: var(--code-bg); }
+    .conc-table td:first-child { font-weight: 600; white-space: nowrap; width: 34%; }
+
+    /* ── footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0 3rem;
+      margin-top: 3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="course">CS 180 / 280A &nbsp;·&nbsp; Project 3</div>
+    <h1>Attention and Transformers</h1>
+    <div class="subtitle">English–French Neural Machine Translation</div>
+    <div class="meta">wahab-2002 &nbsp;·&nbsp; March 2026</div>
+  </header>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <p>Contents</p>
+    <ul>
+      <li><a href="#p1-overview">Part 1 Overview</a></li>
+      <li><a href="#p1-task1">Task 1 – Hyperparameter Tuning</a></li>
+      <li><a href="#p1-task2">Task 2 – Attention Visualization</a></li>
+      <li><a href="#p2-overview">Part 2 Overview</a></li>
+      <li><a href="#p2-task1">Task 1 – Multi-Head Experiments</a></li>
+      <li><a href="#p2-task2">Task 2 – Head Analysis</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PART 1
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="p1-overview">
+    <div class="part-header">
+      <div class="label">Part 1</div>
+      <h2>Bahdanau Attention Mechanism</h2>
+    </div>
+
+    <p>
+      Part 1 extends a GRU-based sequence-to-sequence architecture with Bahdanau additive attention.
+      At each decoding step, the decoder queries all encoder hidden states using a learned scoring
+      function: <em>score(q, k) = v<sup>T</sup> tanh(W<sub>q</sub>q + W<sub>k</sub>k)</em>.
+      A softmax over these scores produces a weighted context vector summarising the most relevant
+      source information for the current decoding step. The model was trained on 3,000
+      English–French sentence pairs from the D2L dataset using an 80/20 train/validation split,
+      with Adam optimisation and gradient clipping at 1.0.
+    </p>
+  </section>
+
+  <!-- ── P1 Task 1 ── -->
+  <section id="p1-task1">
+    <h3>Task 1 — Hyperparameter Tuning</h3>
+
+    <p>
+      Four configurations were evaluated by varying hidden dimensionality, embedding size,
+      network depth, and dropout regularisation. All configurations were trained for 150 epochs.
+      Table 1 summarises the configurations and their best observed validation loss.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Config</th><th>Embed</th><th>Hidden</th><th>Layers</th>
+            <th>Dropout</th><th>LR</th><th>Best Val Loss</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>A – Baseline</td>  <td>64</td> <td>128</td><td>2</td><td>0.1</td><td>0.005</td><td>2.64 (ep. 10)</td></tr>
+          <tr><td>B – Larger</td>    <td>128</td><td>256</td><td>2</td><td>0.1</td><td>0.005</td><td>2.66 (ep. 10)</td></tr>
+          <tr><td>C – No Dropout</td><td>64</td> <td>128</td><td>2</td><td>0.0</td><td>0.005</td><td>2.53 (ep. 10)</td></tr>
+          <tr><td>D – Deep</td>      <td>64</td> <td>128</td><td>3</td><td>0.2</td><td>0.003</td><td>2.71 (ep. 10)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 1. Hyperparameter configurations and best validation loss (Part 1).</p>
+
+    <figure>
+      <img src="./media/fig1_p1_loss.png" alt="Part 1 loss curves"/>
+      <figcaption>
+        <strong>Figure 1.</strong> Training and validation loss curves for all four Part 1 configurations (150 epochs).
+        All models reach minimum validation loss around epoch 10 and overfit thereafter.
+      </figcaption>
+    </figure>
+
+    <h4>Discussion</h4>
+    <p>
+      All four configurations exhibit the same characteristic pattern: training loss drops sharply
+      within the first 20 epochs and converges to approximately 0.22, while validation loss reaches
+      its minimum around epoch 10 and then increases monotonically. This divergence is a clear
+      indicator of overfitting, driven by the small dataset size — with only 2,400 effective
+      training examples after the split, the model memorises the training set but cannot generalise.
+      Early stopping at approximately epoch 10 would have yielded substantially better
+      generalisation for all configurations.
+    </p>
+
+    <div class="finding">
+      <strong>Config A (Baseline)</strong> — Stable convergence, no instability. Provides the most
+      reliable reference point throughout training.
+    </div>
+    <div class="finding">
+      <strong>Config B (Larger)</strong> — Achieves similar best validation loss to A (2.66 vs. 2.64)
+      despite doubling the hidden and embedding dimensions. Confirms that model capacity is not
+      the bottleneck — data quantity is.
+    </div>
+    <div class="finding">
+      <strong>Config C (No Dropout)</strong> — Best peak validation loss of 2.53, but overfits
+      fastest with a visible training spike around epoch 90. Demonstrates concretely why dropout
+      matters even in small models.
+    </div>
+    <div class="finding">
+      <strong>Config D (Deep)</strong> — Slowest convergence; training loss still above 1.0 at
+      epoch 20 where others are below 0.65. Extra depth hurts optimisation on short sentences
+      and yields the worst final validation loss (3.93).
+    </div>
+
+    <h4>BLEU Scores</h4>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Config</th><th>Avg BLEU</th><th>"go ."</th><th>"i lost ."</th>
+            <th>"he's calm ."</th><th>"i'm home ."</th><th>"she runs ."</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>A – Baseline</td>  <td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (&lt;unk&gt;)</td>   <td>1.00</td><td>0.00</td></tr>
+          <tr><td>B – Larger</td>    <td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (&lt;unk&gt;)</td>   <td>1.00</td><td>0.00</td></tr>
+          <tr><td>C – No Dropout</td><td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (mouillé)</td><td>1.00</td><td>0.00</td></tr>
+          <tr><td>D – Deep</td>      <td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (&lt;unk&gt;+)</td>  <td>1.00</td><td>0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 2. Per-sentence BLEU scores for all Part 1 configurations.</p>
+
+    <p>
+      All four configurations achieve an identical average BLEU of 0.40. Two sentences score 1.0
+      consistently ("i lost" and "i'm home"). Three sentences score 0.0 — but for different reasons.
+      "go ." and "she runs ." are translated correctly but score zero due to BLEU's brevity
+      penalty, which heavily penalises predictions shorter than the reference. "he's calm ." fails
+      because "calme" falls below the minimum frequency threshold and is absent from the target
+      vocabulary. Notably, Config C predicts "mouillé" (wet) rather than &lt;unk&gt;, substituting
+      the nearest in-distribution word.
+    </p>
+  </section>
+
+  <!-- ── P1 Task 2 ── -->
+  <section id="p1-task2">
+    <h3>Task 2 — Attention Visualisation</h3>
+
+    <figure>
+      <img src="./media/fig2_p1_attn.png" alt="Bahdanau attention heatmaps"/>
+      <figcaption>
+        <strong>Figure 2.</strong> Bahdanau attention heatmaps for three sentence pairs (Config B).
+        X-axis: source tokens; Y-axis: generated target tokens. Darker = higher attention weight.
+      </figcaption>
+    </figure>
+
+    <p>
+      The attention heatmaps confirm that the Bahdanau mechanism has learned meaningful
+      source–target alignments despite the limited training data.
+    </p>
+
+    <div class="finding">
+      <strong>"go ." → "va !"</strong> — The model attends with ~0.65 weight to "go" when generating
+      "va", correctly identifying the content word. Attention shifts to punctuation for "!".
+      The near-one-hot pattern reflects an unambiguous, deterministic alignment.
+    </div>
+    <div class="finding">
+      <strong>"i lost ." → "j'ai perdu ."</strong> — Attention is more distributed, reflecting
+      a structural mismatch. "j'ai" attends most strongly to "lost" while "perdu" also attends
+      to "lost" with secondary weight on "i." Linguistically appropriate: French compound past
+      tense (avoir + participe passé) requires both French tokens to reference the single English verb.
+    </div>
+    <div class="finding">
+      <strong>"he's calm ." → "il est &lt;unk&gt; ."</strong> — The model correctly generates
+      "il" (attending to "he's") and "est" (attending to "calm"). The &lt;unk&gt; results from
+      vocabulary coverage failure, not an attention failure — the mechanism continues to focus
+      on the correct source token throughout.
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PART 2
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="p2-overview">
+    <div class="part-header">
+      <div class="label">Part 2</div>
+      <h2>Multi-Head Attention</h2>
+    </div>
+
+    <p>
+      Part 2 replaces Bahdanau attention with scaled dot-product multi-head attention.
+      Each head independently projects queries, keys, and values into a
+      <em>d<sub>head</sub> = num_hiddens / num_heads</em> dimensional subspace and computes:
+      <em>Attention(Q,K,V) = softmax(QK<sup>T</sup> / √d<sub>head</sub>)V</em>.
+      All head outputs are concatenated and projected through W<sub>o</sub>.
+      The same GRU encoder–decoder structure from Part 1 is retained; only the attention
+      module changes. All experiments use num_hiddens = 128, embed_size = 64, 2 GRU layers,
+      dropout = 0.1, lr = 0.005, and 150 training epochs.
+    </p>
+  </section>
+
+  <!-- ── P2 Task 1 ── -->
+  <section id="p2-task1">
+    <h3>Task 1 — Effect of Number of Heads</h3>
+
+    <p>
+      Four models were trained with 1, 2, 4, and 8 attention heads. The total hidden dimension
+      (128) is held constant, so increasing the number of heads reduces the per-head
+      dimension: 128 → 64 → 32 → 16 dimensions per head respectively.
+    </p>
+
+    <figure>
+      <img src="./media/fig3_p2_loss.png" alt="Part 2 loss curves by head count"/>
+      <figcaption>
+        <strong>Figure 3.</strong> Training and validation loss curves for 1, 2, 4, and 8 attention heads (150 epochs).
+      </figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Heads</th><th>Best Val Loss</th><th>At Epoch</th><th>Final Train Loss</th><th>Final Val Loss</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>2.66</td><td>10</td><td>0.219</td><td>3.82</td></tr>
+          <tr><td>2</td><td>2.58</td><td>10</td><td>0.232</td><td>3.77</td></tr>
+          <tr><td>4</td><td>2.64</td><td>10</td><td>0.234</td><td>3.84</td></tr>
+          <tr><td>8</td><td>2.62</td><td>10</td><td>0.298</td><td>3.83</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 3. Loss metrics by number of attention heads.</p>
+
+    <p>
+      The 1-head model converges fastest and most cleanly. The 2-head model achieves the
+      best peak validation loss (2.58), suggesting two attention perspectives provide a marginal
+      benefit. The 4-head model matches the 1-head baseline, showing diminishing returns as
+      per-head dimensionality falls to 32. The 8-head model is the least stable — training
+      loss variance increases after epoch 80 and the final training loss (0.298) is higher than
+      all others, consistent with <em>dimension starvation</em>: 16 dimensions per head is
+      too constrained to learn independent meaningful patterns.
+    </p>
+
+    <h4>BLEU Scores</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Heads</th><th>Avg BLEU</th><th>"go ."</th><th>"i lost ."</th>
+            <th>"he's calm ."</th><th>"i'm home ."</th><th>"she runs ."</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (reste calme)</td>   <td>1.00</td><td>0.00</td></tr>
+          <tr><td>2</td><td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (il est en train)</td><td>1.00</td><td>0.00</td></tr>
+          <tr><td>4</td><td>0.40</td><td>0.00</td><td>1.00</td><td>0.00 (&lt;unk&gt;)</td>          <td>1.00</td><td>0.00</td></tr>
+          <tr><td>8</td><td>0.60</td><td>0.00</td><td>1.00</td><td>1.00 (il est calme)</td>  <td>1.00</td><td>0.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 4. Per-sentence BLEU scores by number of attention heads.</p>
+
+    <p>
+      Three of four configurations score 0.40, matching Part 1. The 8-head model achieves 0.60
+      by correctly translating "he's calm ." to "il est calme ." Despite this, the 8-head model
+      has the worst loss curves. This discrepancy illustrates a key limitation: with only five
+      test sentences, a single correct translation shifts average BLEU by 0.20, making it a
+      noisy indicator of generalisation quality. The loss curves provide a more reliable signal.
+    </p>
+
+    <p>
+      Comparing Part 1 and Part 2: multi-head attention does not provide a consistent improvement
+      over Bahdanau attention on this dataset. The best peak validation loss in Part 2 (2.58,
+      2 heads) is comparable to Part 1 (2.53, Config C). For short sentences with simple,
+      near-monotonic alignments, the additional expressiveness of multi-head attention yields
+      diminishing returns within the fixed 128-unit hidden dimension.
+    </p>
+  </section>
+
+  <!-- ── P2 Task 2 ── -->
+  <section id="p2-task2">
+    <h3>Task 2 — Analysis of Attention Heads</h3>
+
+    <p>
+      Attention weights were visualised for each head of the 4-head model on three sentence pairs
+      to examine whether heads specialise in distinct source–target relationships.
+    </p>
+
+    <figure>
+      <img src="./media/fig4_p2_go.png" alt="Per-head attention: go"/>
+      <figcaption>
+        <strong>Figure 4.</strong> Per-head attention for "go ." → "va !" (4-head model).
+        All four heads converge to near-identical patterns — complete redundancy on this trivial sentence.
+      </figcaption>
+    </figure>
+
+    <p>
+      All four heads attend with weight ~1.0 to "go" when generating "va" and shift to
+      punctuation for "!". A single-token source sentence presents only one possible alignment,
+      leaving no room for head specialisation.
+    </p>
+
+    <figure>
+      <img src="./media/fig5_p2_lost.png" alt="Per-head attention: i lost"/>
+      <figcaption>
+        <strong>Figure 5.</strong> Per-head attention for "i lost ." → "j'ai perdu ." (4-head model).
+        Heads 1–3 focus on "lost"; Head 4 distributes attention across "i" and "lost," suggesting subject–verb specialisation.
+      </figcaption>
+    </figure>
+
+    <p>
+      Figure 5 reveals the clearest evidence of head specialisation. Heads 1, 2, and 3 attend
+      almost entirely to "lost" for both output tokens. Head 4, however, distributes attention
+      more evenly across "i" and "lost" when generating "j'ai." This is linguistically motivated:
+      Head 4 appears to track the subject pronoun ("i" → "j'") while the others specialise in
+      the main verb. This division of representational labour, even in a simple two-token
+      translation, is consistent with the theoretical motivation for multi-head attention.
+    </p>
+
+    <figure>
+      <img src="./media/fig6_p2_calm.png" alt="Per-head attention: he's calm"/>
+      <figcaption>
+        <strong>Figure 6.</strong> Per-head attention for "he's calm ." → "il est &lt;unk&gt; ." (4-head model).
+        Head 2 exhibits a notably more diffuse pattern compared to the sharper focus of Heads 1, 3, and 4.
+      </figcaption>
+    </figure>
+
+    <p>
+      Heads 1, 3, and 4 maintain sharp attention on "calm" and "he's." Head 2 is more diffuse,
+      spreading attention across all source tokens when generating the unknown token. This may
+      reflect a general-purpose fallback head that activates when no strong alignment signal
+      is available, or a head responding to end-of-sequence context rather than a specific word.
+    </p>
+
+    <figure>
+      <img src="./media/fig7_p2_compare.png" alt="Head-count comparison"/>
+      <figcaption>
+        <strong>Figure 7.</strong> Average attention across heads for "i lost ." across all head-count configurations.
+        Increasing head count produces progressively softer, more distributed attention.
+      </figcaption>
+    </figure>
+
+    <p>
+      As head count increases, averaged attention becomes more distributed: 1-head and 2-head
+      models show near-one-hot focus on "lost," while 4-head and 8-head models spread attention
+      more broadly. This progressive softening is consistent with dimension starvation — as
+      per-head dimension decreases, individual heads have less capacity to commit to a single
+      source token, and averaging further diffuses attention across the source.
+    </p>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="part-header">
+      <div class="label">Summary</div>
+      <h2>Conclusion</h2>
+    </div>
+
+    <p>
+      This project implemented and evaluated two attention mechanisms for neural machine translation.
+      Part 1 demonstrated that Bahdanau additive attention produces interpretable and linguistically
+      meaningful alignments. Part 2 extended the model with scaled dot-product multi-head attention,
+      finding that 2 heads provided the best generalisation while 8 heads degraded due to dimension
+      starvation. Multi-head attention did not consistently outperform Bahdanau attention at this
+      scale, consistent with the expectation that its benefits emerge at larger dataset sizes and
+      sentence complexity.
+    </p>
+
+    <table class="conc-table">
+      <thead><tr><th>Finding</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Overfitting is universal</td>
+          <td>All configurations overfit by epoch 10–20. Dataset size (3,000 examples) is the primary bottleneck, not model capacity.</td>
+        </tr>
+        <tr>
+          <td>Config C best val loss (P1)</td>
+          <td>No-dropout peaks at 2.53 but overfits fastest. Config A offers the best stability–performance tradeoff.</td>
+        </tr>
+        <tr>
+          <td>Larger model doesn't help</td>
+          <td>Config B (2× hidden units) matches Config A's val loss, confirming data is the limiting factor.</td>
+        </tr>
+        <tr>
+          <td>2 heads optimal (P2)</td>
+          <td>2 heads achieves best peak val loss (2.58). 8 heads degrades due to dimension starvation (16 dims/head).</td>
+        </tr>
+        <tr>
+          <td>Multi-head vs. Bahdanau</td>
+          <td>No consistent advantage for multi-head at this scale. Both achieve similar peak val losses (~2.5–2.6).</td>
+        </tr>
+        <tr>
+          <td>Head specialisation</td>
+          <td>Limited but present: Head 4 of the 4-head model differentiates subject from verb in "i lost ."</td>
+        </tr>
+        <tr>
+          <td>BLEU limitations</td>
+          <td>Brevity penalty and vocabulary gaps make BLEU unreliable on short sentences. Correct translations score 0.0.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    wahab-2002 &nbsp;·&nbsp; CS 180 / 280A Project 3 &nbsp;·&nbsp; March 2026
+    &nbsp;·&nbsp;
+    <a href="https://github.com/wahab-2002/wahab-2002.github.io" style="color:var(--accent)">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>
