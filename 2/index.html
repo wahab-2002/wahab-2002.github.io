@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project 2: Modern Recurrent Neural Networks</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #faf9f7;
+      --surface: #ffffff;
+      --border:  #e2ddd8;
+      --text:    #1a1816;
+      --muted:   #6b6560;
+      --accent:  #2d5a8e;
+      --code-bg: #f0ede8;
+      --max-w:   780px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+      padding: 0 1rem;
+    }
+    .page { max-width: var(--max-w); margin: 0 auto; }
+
+    header {
+      border-bottom: 2px solid var(--text);
+      padding: 3.5rem 0 2rem;
+      margin-bottom: 2.5rem;
+    }
+    header .course {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    header h1 { font-size: 2.1rem; font-weight: 600; line-height: 1.2; margin-bottom: 0.5rem; }
+    header .subtitle { font-size: 1.05rem; color: var(--muted); font-style: italic; }
+    header .meta {
+      margin-top: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem 1.4rem;
+      margin-bottom: 3rem;
+    }
+    nav p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.8rem; }
+    nav a { color: var(--accent); text-decoration: none; font-size: 0.92rem; }
+    nav a:hover { text-decoration: underline; }
+
+    section { margin-bottom: 3.5rem; }
+
+    .part-header {
+      border-top: 3px solid var(--text);
+      padding-top: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+    .part-header .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .part-header h2 { font-size: 1.55rem; font-weight: 600; }
+
+    h3 { font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.6rem; }
+    h4 { font-size: 1rem; font-weight: 600; font-style: italic; margin: 1.4rem 0 0.4rem; color: var(--muted); }
+
+    p { margin-bottom: 1rem; }
+
+    figure {
+      margin: 2rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+    }
+    figure img { width: 100%; display: block; border-radius: 2px; }
+    figcaption {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+    }
+    figcaption strong { font-style: normal; color: var(--text); }
+
+    .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; font-family: 'JetBrains Mono', monospace; }
+    thead tr { background: var(--text); color: #fff; }
+    thead th { padding: 0.55rem 0.8rem; text-align: left; font-weight: 500; font-size: 0.78rem; letter-spacing: 0.04em; }
+    tbody tr:nth-child(even) { background: var(--code-bg); }
+    tbody tr:nth-child(odd)  { background: var(--surface); }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+    .table-caption { font-size: 0.84rem; color: var(--muted); font-style: italic; text-align: center; margin-top: 0.4rem; margin-bottom: 1.5rem; }
+
+    .finding {
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      padding: 0.9rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+    .finding strong { color: var(--accent); }
+
+    .conc-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1.2rem 0; }
+    .conc-table th { background: var(--text); color: #fff; padding: 0.5rem 0.8rem; text-align: left; font-weight: 500; }
+    .conc-table td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .conc-table tr:nth-child(even) td { background: var(--code-bg); }
+    .conc-table td:first-child { font-weight: 600; white-space: nowrap; width: 34%; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0 3rem;
+      margin-top: 3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="course">CS 180 / 280A &nbsp;·&nbsp; Project 2</div>
+    <h1>Modern Recurrent Neural Networks</h1>
+    <div class="subtitle">Character-level Language Modelling on The Time Machine</div>
+    <div class="meta">wahab-2002 &nbsp;·&nbsp; March 2026</div>
+  </header>
+
+  <nav>
+    <p>Contents</p>
+    <ul>
+      <li><a href="#p1-overview">Part 1 – Basic RNN</a></li>
+      <li><a href="#p1-task1">Task 1 – Hyperparameter Tuning</a></li>
+      <li><a href="#p1-task2">Task 2 – Gradient Clipping &amp; Activations</a></li>
+      <li><a href="#p2-overview">Part 2 – GRU</a></li>
+      <li><a href="#p2-task1">Task 1 – Hyperparameter Tuning</a></li>
+      <li><a href="#p2-task2">Task 2 – Ablation Study</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════════════════════════════════════════
+       PART 1 — Basic RNN
+  ══════════════════════════════════════════ -->
+  <section id="p1-overview">
+    <div class="part-header">
+      <div class="label">Part 1</div>
+      <h2>Basic Recurrent Neural Networks</h2>
+    </div>
+
+    <h3>Implementation Overview</h3>
+    <p>
+      A basic RNN was implemented from scratch in PyTorch without using any built-in RNN modules.
+      The model was trained on The Time Machine dataset using character-level tokenisation,
+      resulting in a vocabulary of 28 characters (26 letters, space, and unknown token) and a
+      corpus of 188,564 characters split 90/10 into training and validation sets.
+    </p>
+    <p>
+      The architecture consists of five learnable parameter matrices: input-to-hidden
+      W<sub>xh</sub>, hidden-to-hidden W<sub>hh</sub>, hidden bias b<sub>h</sub>,
+      hidden-to-output W<sub>hq</sub>, and output bias b<sub>q</sub>. At each time step the
+      hidden state is updated as <em>H = tanh(X·W<sub>xh</sub> + H<sub>prev</sub>·W<sub>hh</sub>
+      + b<sub>h</sub>)</em> and the output as <em>Y = H·W<sub>hq</sub> + b<sub>q</sub></em>.
+      Gradient clipping with θ = 1.0 was applied to prevent exploding gradients.
+    </p>
+  </section>
+
+  <!-- P1 Task 1 -->
+  <section id="p1-task1">
+    <h3>Task 1 — Hyperparameter Tuning</h3>
+    <p>
+      Four configurations were trained for 100 epochs, varying the number of hidden units,
+      learning rate, and sequence length.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Config</th><th>Hidden</th><th>LR</th><th>Seq Len</th><th>Train PPL</th><th>Val PPL</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Config 1</td><td>256</td><td>0.5</td><td>35</td><td>3.91</td><td>10.58</td></tr>
+          <tr><td>Config 2</td><td>512</td><td>0.5</td><td>35</td><td>3.20</td><td>12.53</td></tr>
+          <tr><td>Config 3</td><td>256</td><td>0.1</td><td>64</td><td>7.42</td><td>10.11</td></tr>
+          <tr><td>Config 4</td><td>512</td><td>0.3</td><td>64</td><td>4.95</td><td>9.46</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 1. RNN hyperparameter configurations and final perplexity.</p>
+
+    <figure>
+      <img src="./media/p2_fig1_rnn_task1.png" alt="RNN hyperparameter tuning curves"/>
+      <figcaption>
+        <strong>Figure 1.</strong> Training and validation perplexity curves for all four RNN
+        configurations (100 epochs). Config 1 achieves the best peak validation PPL (~9.14)
+        around epoch 40 before overfitting.
+      </figcaption>
+    </figure>
+
+    <h4>Discussion</h4>
+
+    <div class="finding">
+      <strong>Config 1 (H=256, LR=0.5, T=35)</strong> — Best peak validation PPL of ~9.14
+      at epoch 40, making it the strongest early-stopping candidate. Overfits clearly after epoch 40.
+    </div>
+    <div class="finding">
+      <strong>Config 2 (H=512, LR=0.5, T=35)</strong> — Worst final validation PPL (12.53)
+      despite lowest training PPL (3.20). Larger hidden size leads to more severe overfitting
+      on this small dataset.
+    </div>
+    <div class="finding">
+      <strong>Config 3 (H=256, LR=0.1, T=64)</strong> — Slowest convergence but most stable
+      training curve. Consistent gradual improvement throughout all 100 epochs with no sign
+      of overfitting.
+    </div>
+    <div class="finding">
+      <strong>Config 4 (H=512, LR=0.3, T=64)</strong> — Best balance between convergence
+      speed and generalisation, achieving a competitive final Val PPL of 9.46.
+    </div>
+
+    <p>
+      Higher learning rates led to faster convergence but more pronounced overfitting, as seen
+      in Configs 1 and 2 where the train–val gap widens significantly after epoch 40–50.
+      Longer sequences (T=64) helped capture more context but required lower learning rates
+      for stable training. The 256-unit hidden size consistently generalised better than 512
+      units, confirming that model capacity should be matched to dataset size.
+    </p>
+  </section>
+
+  <!-- P1 Task 2 -->
+  <section id="p1-task2">
+    <h3>Task 2 — Gradient Clipping and Activation Functions</h3>
+    <p>
+      Four combinations of activation function (tanh vs. ReLU) and gradient clipping
+      (enabled vs. disabled) were evaluated to analyse their impact on training stability
+      and final performance.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Config</th><th>Activation</th><th>Clipping</th><th>Train PPL</th><th>Val PPL</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Tanh + Clipping</td>   <td>tanh</td><td>Yes</td>       <td>3.90</td><td>10.60</td></tr>
+          <tr><td>Tanh + No Clipping</td><td>tanh</td><td>No</td>        <td>4.05</td><td>10.22</td></tr>
+          <tr><td>ReLU + Clipping</td>   <td>ReLU</td><td>Yes (LR=0.1)</td><td>4.96</td><td>8.28</td></tr>
+          <tr><td>ReLU + No Clipping</td><td>ReLU</td><td>No (LR=0.1)</td> <td>4.94</td><td>8.42</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 2. Activation function and gradient clipping comparison.</p>
+
+    <figure>
+      <img src="./media/p2_fig2_tanh.png" alt="Tanh clipping comparison"/>
+      <figcaption>
+        <strong>Figure 2.</strong> Tanh activation — with vs. without gradient clipping.
+        The two curves are nearly identical, confirming tanh's saturating nature naturally
+        suppresses gradient explosion.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/p2_fig3_relu.png" alt="ReLU clipping comparison"/>
+      <figcaption>
+        <strong>Figure 3.</strong> ReLU activation — with vs. without gradient clipping
+        (LR=0.1). Again nearly identical, showing that a small learning rate provides
+        the same stabilising effect as explicit clipping.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/p2_fig4_all.png" alt="All activation and clipping combinations"/>
+      <figcaption>
+        <strong>Figure 4.</strong> All four activation × clipping combinations on one plot.
+        ReLU configurations (green/red) clearly outperform tanh (blue/orange) in
+        validation perplexity.
+      </figcaption>
+    </figure>
+
+    <h4>Discussion</h4>
+    <p>
+      Tanh produced nearly identical results with and without gradient clipping (Val PPL 10.60
+      vs. 10.22), confirming that tanh's saturating nature — squashing all outputs to (−1, 1) —
+      inherently prevents gradient explosion, making explicit clipping largely redundant.
+    </p>
+    <p>
+      ReLU achieved significantly better validation perplexity (8.28 with clipping, 8.42
+      without) compared to tanh (~10.2–10.6). ReLU without clipping did not fail
+      catastrophically as traditionally expected, attributed to the conservative learning rate
+      (LR=0.1) which prevented gradients from growing uncontrollably. The minimal gap between
+      ReLU + Clipping and ReLU + No Clipping suggests that at sufficiently small learning rates,
+      gradient clipping provides diminishing returns regardless of activation function. The
+      better generalisation of ReLU is likely due to avoiding the vanishing gradient problem
+      inherent in tanh's saturating behaviour during backpropagation through time.
+    </p>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       PART 2 — GRU
+  ══════════════════════════════════════════ -->
+  <section id="p2-overview">
+    <div class="part-header">
+      <div class="label">Part 2</div>
+      <h2>Gated Recurrent Units (GRU)</h2>
+    </div>
+
+    <h3>Implementation Overview</h3>
+    <p>
+      A GRU was implemented from scratch in PyTorch, extending the basic RNN with two gating
+      mechanisms. The forward pass at each time step is:
+    </p>
+    <p>
+      Reset gate: <em>R = σ(X·W<sub>xr</sub> + H·W<sub>hr</sub> + b<sub>r</sub>)</em><br/>
+      Update gate: <em>Z = σ(X·W<sub>xz</sub> + H·W<sub>hz</sub> + b<sub>z</sub>)</em><br/>
+      Candidate state: <em>H̃ = tanh(X·W<sub>xh</sub> + (R⊙H)·W<sub>hh</sub> + b<sub>h</sub>)</em><br/>
+      New hidden state: <em>H = Z⊙H + (1−Z)⊙H̃</em>
+    </p>
+    <p>
+      The reset gate controls how much of the previous hidden state contributes to the candidate,
+      enabling selective forgetting. The update gate controls interpolation between the old state
+      and candidate, enabling long-term memory retention. Input projections were pre-computed
+      for all time steps before the sequential loop to improve efficiency.
+    </p>
+  </section>
+
+  <!-- P2 Task 1 -->
+  <section id="p2-task1">
+    <h3>Task 1 — Hyperparameter Tuning</h3>
+    <p>
+      Four configurations were trained for 100 epochs with gradient clipping (θ=1.0), using
+      the same hyperparameter ranges as Part 1 to enable direct comparison.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Config</th><th>Hidden</th><th>LR</th><th>Seq Len</th><th>Train PPL</th><th>Val PPL</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Config 1</td><td>256</td><td>0.5</td><td>35</td><td>3.63</td><td>9.22</td></tr>
+          <tr><td>Config 2</td><td>512</td><td>0.5</td><td>35</td><td>3.38</td><td>10.04</td></tr>
+          <tr><td>Config 3</td><td>256</td><td>0.3</td><td>64</td><td>6.13</td><td>9.01</td></tr>
+          <tr><td>Config 4</td><td>512</td><td>0.3</td><td>64</td><td>6.28</td><td>9.09</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 3. GRU hyperparameter configurations and final perplexity.</p>
+
+    <figure>
+      <img src="./media/p2_fig5_gru_task1.png" alt="GRU hyperparameter tuning curves"/>
+      <figcaption>
+        <strong>Figure 5.</strong> Training and validation perplexity curves for all four GRU
+        configurations (100 epochs). Config 3 achieves the best validation PPL of 9.01.
+      </figcaption>
+    </figure>
+
+    <h4>GRU vs. Basic RNN Comparison</h4>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Best Val PPL</th><th>Best Configuration</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Basic RNN</td><td>9.14</td><td>H=256, LR=0.5, T=35 (epoch 40)</td></tr>
+          <tr><td>GRU</td>      <td>9.01</td><td>H=256, LR=0.3, T=64 (epoch 100)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 4. Best validation perplexity: GRU vs. basic RNN.</p>
+
+    <p>
+      The GRU outperforms the basic RNN in validation perplexity (9.01 vs. 9.14). The
+      improvement is modest on this small dataset but would become more pronounced with
+      longer sequences or larger corpora. Notably, longer sequence lengths (T=64) benefit
+      GRU more than RNN — GRU improves validation PPL with longer context while RNN tends
+      to struggle — directly demonstrating the practical benefit of gating for long-range
+      dependencies. GRU training takes approximately 11 minutes per configuration on an A100
+      GPU (~6–7 seconds per epoch), versus faster training for the basic RNN due to fewer
+      parameters.
+    </p>
+  </section>
+
+  <!-- P2 Task 2 -->
+  <section id="p2-task2">
+    <h3>Task 2 — Ablation Study on GRU Gates</h3>
+    <p>
+      An ablation study was conducted to isolate the contribution of each GRU gate. Three
+      variants were trained using the same base configuration (H=256, LR=0.5, T=35, 100 epochs):
+      Full GRU (both gates), Reset Gate Only (update gate disabled, Z forced to 0), and
+      Update Gate Only (reset gate disabled, R forced to 1).
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Best Val PPL</th><th>Best Epoch</th><th>Final Val PPL</th><th>Train PPL</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Full GRU</td>        <td>8.39</td><td>70</td><td>9.40</td> <td>3.61</td></tr>
+          <tr><td>Reset Gate Only</td> <td>8.29</td><td>50</td><td>13.47</td><td>3.03</td></tr>
+          <tr><td>Update Gate Only</td><td>8.86</td><td>50</td><td>13.06</td><td>3.11</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 5. Ablation study results — full GRU vs. single-gate variants.</p>
+
+    <figure>
+      <img src="./media/p2_fig6_reset.png" alt="Full GRU vs Reset Gate Only"/>
+      <figcaption>
+        <strong>Figure 6.</strong> Full GRU vs. Reset Gate Only. Reset-only achieves a better
+        peak validation PPL (8.29) but catastrophically overfits after epoch 50,
+        reaching 13.47 by epoch 100.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/p2_fig7_update.png" alt="Full GRU vs Update Gate Only"/>
+      <figcaption>
+        <strong>Figure 7.</strong> Full GRU vs. Update Gate Only. Update-only peaks at 8.86
+        then overfits to 13.06, worse than reset-only at both peak and final Val PPL.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/p2_fig8_ablation.png" alt="Full ablation comparison"/>
+      <figcaption>
+        <strong>Figure 8.</strong> All three models on one plot. The Full GRU (blue) maintains
+        stable validation PPL throughout while both single-gate variants diverge after epoch 50.
+      </figcaption>
+    </figure>
+
+    <h4>Overfitting Analysis</h4>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Train PPL</th><th>Final Val PPL</th><th>Gap</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Full GRU</td>        <td>3.61</td><td>9.40</td> <td>5.79</td></tr>
+          <tr><td>Reset Gate Only</td> <td>3.03</td><td>13.47</td><td>10.44 (+80%)</td></tr>
+          <tr><td>Update Gate Only</td><td>3.11</td><td>13.06</td><td>9.95 (+72%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 6. Train–validation gap comparison across GRU ablation variants.</p>
+
+    <h4>Sample Generated Text (Epoch 100)</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Generated Text</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Full GRU</td>        <td>time traveller and the distance of the distances of the distance...</td></tr>
+          <tr><td>Reset Gate Only</td> <td>time traveller perceiventil for the fire and the morlocks down...</td></tr>
+          <tr><td>Update Gate Only</td><td>time traveller stood le survent i facceed the white sphinx i had...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 7. Sample generated text at epoch 100 for each ablation variant.</p>
+
+    <h4>Discussion</h4>
+    <p>
+      The reset gate provides short-term flexibility by allowing the model to selectively forget
+      irrelevant past context. Without the update gate (Reset Gate Only), the hidden state is
+      fully replaced at every step, allowing rapid adaptation but destroying long-term memory.
+      This leads to aggressive memorisation of training patterns — achieving lower training PPL
+      (3.03) but catastrophically overfitting to 13.47 validation PPL, a 62% degradation from
+      its peak. The invented word "perceiventil" in the generated text confirms the model has
+      memorised character n-grams without learning coherent structure.
+    </p>
+    <p>
+      Without the reset gate (Update Gate Only), H̃ always incorporates the full previous hidden
+      state, limiting the model's ability to adapt when old context becomes irrelevant. It
+      achieves the worst peak validation PPL (8.86) and similarly overfits to 13.06. Generated
+      words like "survent" and "facceed" indicate character-level memorisation without coherent
+      language structure.
+    </p>
+    <p>
+      Critically, both ablation models achieve lower training PPL than the Full GRU (3.03 and
+      3.11 vs. 3.61), confirming they are better at memorising training data. Yet their final
+      validation PPL is 43% and 39% worse respectively. The two gates act as a synergistic
+      regularisation mechanism: the reset gate prevents stale information accumulation while
+      the update gate prevents wholesale replacement of useful long-term context. Together they
+      produce a model that generalises well without sacrificing learning ability — something
+      neither gate achieves independently.
+    </p>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       CONCLUSION
+  ══════════════════════════════════════════ -->
+  <section id="conclusion">
+    <div class="part-header">
+      <div class="label">Summary</div>
+      <h2>Conclusion</h2>
+    </div>
+
+    <p>
+      This project implemented and analysed basic RNN and GRU architectures from scratch in
+      PyTorch on The Time Machine dataset. The key findings are summarised below.
+    </p>
+
+    <table class="conc-table">
+      <thead><tr><th>Finding</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Best RNN config</td>
+          <td>H=256, LR=0.5, T=35 achieved peak Val PPL of 9.14 at epoch 40. Early stopping strongly recommended.</td>
+        </tr>
+        <tr>
+          <td>Larger hidden size hurts</td>
+          <td>H=512 consistently increased overfitting without improving generalisation. Capacity must match dataset size.</td>
+        </tr>
+        <tr>
+          <td>Gradient clipping negligible for tanh</td>
+          <td>tanh's saturating nature naturally suppresses gradient explosion, making explicit clipping redundant.</td>
+        </tr>
+        <tr>
+          <td>ReLU outperforms tanh</td>
+          <td>ReLU achieves Val PPL 8.28 vs. tanh's 10.60. Learning rate more important than clipping for gradient stability.</td>
+        </tr>
+        <tr>
+          <td>GRU beats basic RNN</td>
+          <td>Best Val PPL 9.01 vs. 9.14. Advantage most pronounced for longer sequence lengths (T=64).</td>
+        </tr>
+        <tr>
+          <td>Both gates are necessary</td>
+          <td>Removing either gate results in 39–43% worse final Val PPL despite lower training PPL — severe overfitting.</td>
+        </tr>
+        <tr>
+          <td>Gates act as regularisers</td>
+          <td>Reset and update gates work synergistically. Neither alone can replicate the generalisation of the full GRU.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    wahab-2002 &nbsp;·&nbsp; CS 180 / 280A Project 2 &nbsp;·&nbsp; March 2026
+    &nbsp;·&nbsp;
+    <a href="https://github.com/wahab-2002/wahab-2002.github.io" style="color:var(--accent)">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>
