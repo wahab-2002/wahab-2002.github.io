@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Project 4: Generative Models — VAE and GAN</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #faf9f7;
+      --surface:  #ffffff;
+      --border:   #e2ddd8;
+      --text:     #1a1816;
+      --muted:    #6b6560;
+      --accent:   #2d5a8e;
+      --accent2:  #c0392b;
+      --code-bg:  #f0ede8;
+      --max-w:    780px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+      padding: 0 1rem;
+    }
+
+    .page { max-width: var(--max-w); margin: 0 auto; }
+
+    header {
+      border-bottom: 2px solid var(--text);
+      padding: 3.5rem 0 2rem;
+      margin-bottom: 2.5rem;
+    }
+    header .course {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-size: 2.1rem;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    header .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+    header .meta {
+      margin-top: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    nav {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem 1.4rem;
+      margin-bottom: 3rem;
+    }
+    nav p {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem 1.8rem; }
+    nav a { color: var(--accent); text-decoration: none; font-size: 0.92rem; }
+    nav a:hover { text-decoration: underline; }
+
+    section { margin-bottom: 3.5rem; }
+
+    .part-header {
+      border-top: 3px solid var(--text);
+      padding-top: 1.2rem;
+      margin-bottom: 1.8rem;
+    }
+    .part-header .label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+    .part-header h2 { font-size: 1.55rem; font-weight: 600; }
+
+    h3 { font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.6rem; }
+    h4 { font-size: 1rem; font-weight: 600; font-style: italic; margin: 1.4rem 0 0.4rem; color: var(--muted); }
+
+    p { margin-bottom: 1rem; }
+
+    figure {
+      margin: 2rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.2rem;
+    }
+    figure img {
+      width: 100%;
+      display: block;
+      border-radius: 2px;
+    }
+    figcaption {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-style: italic;
+      line-height: 1.5;
+    }
+    figcaption strong { font-style: normal; color: var(--text); }
+
+    .table-wrap { overflow-x: auto; margin: 1.5rem 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    thead tr { background: var(--text); color: #fff; }
+    thead th {
+      padding: 0.55rem 0.8rem;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+    tbody tr:nth-child(even) { background: var(--code-bg); }
+    tbody tr:nth-child(odd)  { background: var(--surface); }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+    .table-caption {
+      font-size: 0.84rem;
+      color: var(--muted);
+      font-style: italic;
+      text-align: center;
+      margin-top: 0.4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .finding {
+      border-left: 3px solid var(--accent);
+      background: var(--surface);
+      padding: 0.9rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+    .finding strong { color: var(--accent); }
+
+    .warning {
+      border-left: 3px solid var(--accent2);
+      background: var(--surface);
+      padding: 0.9rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+    .warning strong { color: var(--accent2); }
+
+    .conc-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1.2rem 0; }
+    .conc-table th {
+      background: var(--text); color: #fff;
+      padding: 0.5rem 0.8rem; text-align: left; font-weight: 500;
+    }
+    .conc-table td {
+      padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .conc-table tr:nth-child(even) td { background: var(--code-bg); }
+    .conc-table td:first-child { font-weight: 600; white-space: nowrap; width: 34%; }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0 3rem;
+      margin-top: 3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="course">CSCI 492 &nbsp;·&nbsp; Project 4</div>
+    <h1>Generative Models</h1>
+    <div class="subtitle">Variational Autoencoders and Deep Convolutional GANs</div>
+    <div class="meta">wahab-2002 &nbsp;·&nbsp; April 2026</div>
+  </header>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <p>Contents</p>
+    <ul>
+      <li><a href="#p1-overview">Part 1 Overview</a></li>
+      <li><a href="#p1-task1">Task 1 – Autoencoder</a></li>
+      <li><a href="#p1-task2">Task 2 – VAE</a></li>
+      <li><a href="#p2-overview">Part 2 Overview</a></li>
+      <li><a href="#p2-task1">Task 1 – DCGAN Implementation</a></li>
+      <li><a href="#p2-task2">Task 2 – Tuning &amp; Evaluation</a></li>
+      <li><a href="#code-review">Code Review Notes</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PART 1
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="p1-overview">
+    <div class="part-header">
+      <div class="label">Part 1</div>
+      <h2>Variational Autoencoder (VAE)</h2>
+    </div>
+    <p>
+      Part 1 implements and compares a basic autoencoder and a variational autoencoder on the MNIST
+      handwritten-digit dataset (60,000 training / 10,000 test images, 28×28 grayscale). Both
+      architectures use fully connected networks with symmetric encoder–decoder pairs
+      (784 → 512 → 256 → latent → 256 → 512 → 784). The autoencoder is trained with MSE
+      reconstruction loss; the VAE is trained with a combined binary cross-entropy reconstruction
+      loss and KL divergence regularisation, using a 2-dimensional latent space to allow direct
+      2D visualisation. Both use Adam with lr = 1×10⁻³ and batch size 128.
+    </p>
+  </section>
+
+  <!-- ── P1 Task 1 ── -->
+  <section id="p1-task1">
+    <h3>Task 1 — Basic Autoencoder</h3>
+    <p>
+      Three autoencoders were trained for 20 epochs with latent dimensions of 2, 8, and 32.
+      Figure 1 shows the MSE training loss for all three configurations.
+    </p>
+
+    <figure>
+      <img src="./media/fig1_ae_loss.png" alt="AE training loss curves"/>
+      <figcaption>
+        <strong>Figure 1.</strong> Autoencoder MSE training loss across 20 epochs for latent dimensions
+        2, 8, and 32. All models converge smoothly; larger latent spaces achieve lower final loss
+        as expected.
+      </figcaption>
+    </figure>
+
+    <p>
+      Final MSE losses at epoch 20 are approximately 0.0350 (latent=2), 0.0135 (latent=8), and
+      below 0.009 (latent=32). The monotonic improvement with dimensionality reflects the
+      information-theoretic upper bound: a wider bottleneck can faithfully encode more detail.
+    </p>
+
+    <h4>Reconstruction Quality</h4>
+
+    <figure>
+      <img src="./media/fig2_ae_recon_dim2.png" alt="AE reconstructions latent_dim=2"/>
+      <figcaption>
+        <strong>Figure 2.</strong> Autoencoder reconstructions with latent_dim=2. Top row: original
+        test digits. Bottom row: reconstructed. Digits are recognisable but heavily blurred —
+        2 dimensions cannot capture fine stroke detail.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/fig3_ae_recon_dim8.png" alt="AE reconstructions latent_dim=8"/>
+      <figcaption>
+        <strong>Figure 3.</strong> Reconstructions with latent_dim=8. Notable improvement over the
+        2-dim model: digit shapes are sharper and more distinct, though some blurring persists.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/fig4_ae_recon_dim32.png" alt="AE reconstructions latent_dim=32"/>
+      <figcaption>
+        <strong>Figure 4.</strong> Reconstructions with latent_dim=32. Near-perfect reconstruction —
+        strokes, serifs, and digit-specific features are faithfully reproduced. The 32-dim
+        bottleneck provides sufficient capacity for MNIST.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>Discussion — effect of latent dimensionality on reconstruction:</strong>
+      Increasing the latent dimension reduces MSE loss and produces progressively sharper
+      reconstructions. At dim=2, the model is forced to compress the entire digit manifold into
+      a 2D plane, resulting in blurred averages. At dim=32, each digit class occupies a distinct
+      region with enough internal variation to reconstruct individual strokes. The tradeoff is
+      that higher dimensionality gives the encoder more freedom to place codes anywhere in
+      ℝ<sup>32</sup>, making random sampling less meaningful — which motivates the VAE.
+    </div>
+
+    <h4>Sampling from the Latent Space</h4>
+
+    <figure>
+      <img src="./media/fig5_ae_samples_dim8.png" alt="AE samples latent_dim=8"/>
+      <figcaption>
+        <strong>Figure 5.</strong> 16 random samples decoded from a standard normal prior using
+        the latent_dim=8 autoencoder. Most samples are incoherent or blurry — the encoder has not
+        been trained to use the prior N(0,I), so random vectors fall outside the learned region.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/fig6_ae_samples_dim32.png" alt="AE samples latent_dim=32"/>
+      <figcaption>
+        <strong>Figure 6.</strong> Random samples decoded using the latent_dim=32 autoencoder.
+        Outputs are even less structured than the 8-dim case: the higher-dimensional space has
+        larger empty regions, and random N(0,I) vectors are unlikely to land near any training code.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>Discussion — why AE sampling is poor:</strong>
+      A standard autoencoder imposes no constraint on the shape or density of the latent
+      distribution. The encoder simply finds the most compact code for each input, leaving
+      large gaps in latent space that the decoder has never seen during training. Sampling
+      N(0,I) vectors randomly hits these gaps, producing nonsensical outputs. This is precisely
+      the motivation for VAEs: explicitly regularising the latent space to match a known prior.
+    </div>
+  </section>
+
+  <!-- ── P1 Task 2 ── -->
+  <section id="p1-task2">
+    <h3>Task 2 — Variational Autoencoder</h3>
+    <p>
+      A VAE with a 2-dimensional latent space was trained for 30 epochs. The encoder outputs
+      both a mean μ and log-variance log σ² vector; the reparameterisation trick
+      <em>z = μ + ε · exp(0.5 · log σ²)</em>, ε ~ N(0,I), makes sampling differentiable.
+      The loss is <em>L = BCE(x̂, x) + KL(q(z|x) ‖ N(0,I))</em>, where the KL term is computed
+      analytically as <em>−0.5 · Σ(1 + log σ² − μ² − σ²)</em>.
+    </p>
+
+    <figure>
+      <img src="./media/fig7_vae_loss.png" alt="VAE training loss"/>
+      <figcaption>
+        <strong>Figure 7.</strong> VAE total loss (BCE + KLD) over 30 training epochs. Loss decreases
+        steadily from ~149 to ~137, indicating stable training with no collapse. The high absolute
+        value reflects the BCE summed over 784 pixels per image.
+      </figcaption>
+    </figure>
+
+    <h4>VAE vs. AE Sampling</h4>
+
+    <figure>
+      <img src="./media/fig8_vae_samples.png" alt="VAE random samples"/>
+      <figcaption>
+        <strong>Figure 8.</strong> 16 random samples generated by the VAE (latent_dim=2) by sampling
+        z ~ N(0,I) and decoding. Outputs are recognisable as MNIST-style digits — the KL
+        regularisation has shaped the latent space to match the prior.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/fig9_ae_samples_compare.png" alt="AE samples for comparison"/>
+      <figcaption>
+        <strong>Figure 9.</strong> AE random samples (latent_dim=8) shown for comparison.
+        Outputs are largely incoherent or structurally damaged, confirming the gap between
+        constrained (VAE) and unconstrained (AE) latent spaces.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>Discussion — VAE vs. AE generation quality:</strong>
+      The VAE produces far more coherent samples than the AE. By penalising deviation of the
+      posterior q(z|x) from N(0,I), the VAE fills the latent space densely so that every
+      point in the prior support decodes to a plausible image. The AE latent codes cluster
+      arbitrarily and random vectors mostly land in unexplored regions, yielding noise.
+      The cost is slightly blurrier reconstructions (BCE encourages averaging), but the
+      generative quality improvement is substantial.
+    </div>
+
+    <h4>Latent Space Visualisation</h4>
+
+    <figure>
+      <img src="./media/fig10_vae_latent_1.png" alt="VAE latent grid [-1,1]"/>
+      <figcaption>
+        <strong>Figure 10.</strong> VAE latent space decoded over a 20×20 grid with z ∈ [−1.0, 1.0].
+        This range sits within the core of the N(0,I) prior. Smooth, continuous transitions between
+        digit classes are visible — a defining property of a well-trained VAE latent space.
+      </figcaption>
+    </figure>
+
+    <figure>
+      <img src="./media/fig11_vae_latent_5.png" alt="VAE latent grid [-5,5]"/>
+      <figcaption>
+        <strong>Figure 11.</strong> VAE latent space decoded over z ∈ [−5.0, 5.0]. The central region
+        remains digit-like, but the periphery (beyond ±2–3σ) increasingly produces blurry or empty
+        outputs, consistent with the prior placing negligible density at the extremes.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>Discussion — latent space observations:</strong>
+      The [−1, 1] grid reveals a smooth, organised manifold where nearby latent points decode to
+      similar or morphologically related digits — the hallmark of a continuous, disentangled
+      representation. The [−5, 5] grid confirms that meaningful content is concentrated within
+      roughly ±2–3 standard deviations of the origin, exactly where the standard Gaussian prior
+      concentrates mass. The blank/blurry borders show that the KL penalty has successfully
+      prevented codes from colonising the low-density tails, and it confirms that the useful
+      generation range is approximately [−2.5, 2.5].
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       PART 2
+  ══════════════════════════════════════════════════════════════ -->
+  <section id="p2-overview">
+    <div class="part-header">
+      <div class="label">Part 2</div>
+      <h2>Deep Convolutional GAN</h2>
+    </div>
+    <p>
+      Part 2 implements a DCGAN to generate 64×64 RGB Pokémon images from a dataset of 809 images
+      stored in Google Drive. Input images are resized, centre-cropped to 64×64, and normalised to
+      [−1, 1]. The generator maps a 100-dimensional noise vector through five transposed convolution
+      blocks (ConvTranspose2d → BatchNorm2d → ReLU, final layer uses Tanh). The discriminator is a
+      mirrored convolutional network (Conv2d → BatchNorm2d → LeakyReLU, no BN on first layer,
+      final Sigmoid). Both are initialised with N(0, 0.02) for conv weights and N(1, 0.02) /
+      constant 0 for BatchNorm, as specified in the DCGAN paper. Training uses BCELoss with Adam
+      (β₁ = 0.5) for both networks.
+    </p>
+  </section>
+
+  <!-- ── P2 Task 1 ── -->
+  <section id="p2-task1">
+    <h3>Task 1 — DCGAN Implementation</h3>
+
+    <figure>
+      <img src="./media/fig12_real_pokemon.png" alt="Real Pokemon images"/>
+      <figcaption>
+        <strong>Figure 12.</strong> Sample batch of real Pokémon images from the training set (809 total).
+        The diversity in colour palette, shapes, and textures makes this a challenging generation
+        target for such a small dataset.
+      </figcaption>
+    </figure>
+
+    <p>
+      The generator architecture follows the DCGAN paper precisely: a 4×4 projection from noise
+      (NZ=100, NGF=64) through four upsampling stages to reach 64×64×3. The discriminator mirrors
+      this with stride-2 convolutions and LeakyReLU(0.2). A fixed noise vector is saved before
+      training and reused at every checkpoint to enable consistent progression visualisation.
+    </p>
+  </section>
+
+  <!-- ── P2 Task 2 ── -->
+  <section id="p2-task2">
+    <h3>Task 2 — GAN Tuning and Evaluation</h3>
+
+    <h4>Loss Curves (Main Run — 50 Epochs, LeakyReLU)</h4>
+
+    <figure>
+      <img src="./media/fig13_dcgan_loss.png" alt="DCGAN loss curves"/>
+      <figcaption>
+        <strong>Figure 13.</strong> Generator and discriminator loss curves over 50 training epochs.
+        The discriminator quickly dominates (D loss → 0), driving G loss very high — a classic sign
+        of discriminator overfitting on a small dataset.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>Loss trend discussion:</strong>
+      The discriminator achieves near-zero loss within the first few epochs, while the generator
+      loss rises sharply and then oscillates at high values. This indicates the discriminator —
+      trained on only 809 real images — memorises the training set and easily rejects all generator
+      outputs. With such a small dataset, the real distribution is trivially learnable by the
+      discriminator, leaving no useful gradient signal for the generator after the early epochs.
+      A lower discriminator learning rate, gradient penalty, or dataset augmentation would help
+      balance this.
+    </div>
+
+    <h4>Image Quality Progression</h4>
+
+    <figure>
+      <img src="./media/fig14_progression.png" alt="Generated image progression"/>
+      <figcaption>
+        <strong>Figure 14.</strong> Generated images at epochs 1, 5, 10, 15, 20, 25, 30, 35, 40,
+        45, 50 from a fixed noise vector. Early epochs produce noise; some colour and shape
+        structure emerges by epoch 10–15, but quality plateaus and degrades as the discriminator
+        overpowers the generator.
+      </figcaption>
+    </figure>
+
+    <h4>LeakyReLU vs. Standard ReLU</h4>
+
+    <figure>
+      <img src="./media/fig15_relu_compare.png" alt="ReLU vs LeakyReLU comparison"/>
+      <figcaption>
+        <strong>Figure 15.</strong> Generator and discriminator loss curves for standard ReLU (left)
+        and LeakyReLU (right) in the discriminator, each trained for 20 epochs.
+      </figcaption>
+    </figure>
+
+    <div class="finding">
+      <strong>ReLU vs. LeakyReLU discussion:</strong>
+      Both activations show the same overall instability pattern on this dataset, but the
+      discriminator converges to near-zero loss faster with standard ReLU. With ReLU, negative
+      activations are zeroed out, causing many discriminator neurons to become permanently inactive
+      (the "dying ReLU" problem). Despite this, the discriminator still wins quickly — the dataset
+      is small enough that even a degraded discriminator can memorise it. LeakyReLU provides a
+      non-zero gradient for negative inputs, keeping more neurons active and giving the generator
+      slightly longer before the discriminator fully dominates, producing marginally more stable
+      early training.
+    </div>
+
+    <h4>Hyperparameter Tuning</h4>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>LR</th><th>Leaky Slope</th><th>Final G Loss (ep. 10)</th>
+            <th>Final D Loss (ep. 10)</th><th>Assessment</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>0.0001</td><td>0.1</td><td>8.19</td> <td>0.0101</td><td>Most balanced</td></tr>
+          <tr><td>0.0001</td><td>0.2</td><td>8.23</td> <td>0.0169</td><td>Stable</td></tr>
+          <tr><td>0.0001</td><td>0.3</td><td>18.34</td><td>0.9216</td><td>Unstable</td></tr>
+          <tr><td>0.0002</td><td>0.1</td><td>34.71</td><td>0.0002</td><td>D dominates</td></tr>
+          <tr><td>0.0002</td><td>0.2</td><td>37.24</td><td>0.0002</td><td>D dominates</td></tr>
+          <tr><td>0.0002</td><td>0.3</td><td>36.35</td><td>0.0001</td><td>D dominates</td></tr>
+          <tr><td>0.0004</td><td>0.1</td><td>3.64</td> <td>1.2114</td><td>G winning</td></tr>
+          <tr><td>0.0004</td><td>0.2</td><td>39.54</td><td>0.0003</td><td>D dominates</td></tr>
+          <tr><td>0.0004</td><td>0.3</td><td>43.47</td><td>0.0000</td><td>Complete collapse</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-caption">Table 1. Hyperparameter tuning results after 10 epochs across 9 LR × slope combinations.</p>
+
+    <div class="finding">
+      <strong>Best configuration:</strong> lr = 0.0001, slope = 0.1 — the only setting that
+      maintains a non-trivial discriminator loss (0.01) alongside a moderate generator loss (8.19),
+      suggesting both networks are still learning. At lr = 0.0002 and above, the discriminator
+      overpowers the generator within a few epochs for most slope values.
+    </div>
+    <div class="finding">
+      <strong>Outlier — lr = 0.0004, slope = 0.1:</strong> Generator loss is unusually low (3.64)
+      while D loss is 1.21 — the opposite regime where the generator temporarily wins. This is
+      likely a lucky random initialisation and would not persist over more epochs.
+    </div>
+    <div class="finding">
+      <strong>Mode collapse and stability:</strong> The main 50-epoch run (lr = 0.0002) exhibits
+      progressive mode collapse — the fixed-noise progression shows images that improve slightly
+      then stagnate or degrade after the discriminator saturates. The small dataset (809 images)
+      is the root cause: the discriminator memorises all real samples too quickly for a meaningful
+      adversarial equilibrium to form.
+    </div>
+
+    <h4>Final Generated Images</h4>
+
+    <figure>
+      <img src="./media/fig16_final_pokemon.png" alt="Final generated Pokemon"/>
+      <figcaption>
+        <strong>Figure 16.</strong> 64 samples from the final generator (epoch 50). Images show
+        colourful blobs with Pokémon-like colour distributions but lack clear structural detail —
+        consistent with the generator having learned the palette without resolving to a stable
+        equilibrium. Some diversity in colour is visible, suggesting partial avoidance of full
+        mode collapse.
+      </figcaption>
+    </figure>
+  </section>
+
+  <!-- ── CODE REVIEW ── -->
+  <section id="code-review">
+    <div class="part-header">
+      <div class="label">Review</div>
+      <h2>Code Review Notes</h2>
+    </div>
+
+    <p>The implementations are conceptually correct and satisfy all undergraduate requirements.
+    One minor bug and two design observations are noted below.</p>
+
+    <div class="warning">
+      <strong>Bug — variable name collision in <code>train_dcgan</code> (Part 2):</strong>
+      The function signature uses <code>label</code> as a string parameter for logging (e.g.,
+      <code>'LeakyReLU'</code>), but the training loop reassigns it to a PyTorch tensor:
+      <code>label = torch.full((b,), real_label, ...)</code>. This causes the print statement
+      <code>f'[{label}] Epoch ...'</code> to output the full tensor of ones instead of the
+      intended string, as seen in the notebook output. Training is unaffected, but the logs
+      are unreadable. <strong>Fix:</strong> rename the logging parameter to <code>run_name</code>
+      and use that in the print statement.
+    </div>
+
+    <div class="finding">
+      <strong>Part 1 — implementation correctness:</strong>
+      All components are correctly implemented. The reparameterisation trick is exact.
+      The KLD formula <em>−0.5 · Σ(1 + log σ² − μ² − exp(log σ²))</em> is the standard
+      closed-form KL divergence between N(μ, σ²) and N(0,1). The latent grid visualisation
+      correctly decodes a linearly-spaced 2D mesh. BCE loss is used appropriately (pixel values
+      are in [0,1] from <code>ToTensor()</code>).
+    </div>
+
+    <div class="finding">
+      <strong>Part 2 — implementation correctness:</strong>
+      The DCGAN architecture exactly matches the reference paper: transposed convolution with
+      BatchNorm and ReLU in the generator; strided convolution with BatchNorm and LeakyReLU
+      (no BN on the first discriminator layer) in the discriminator; Tanh output for G, Sigmoid
+      for D. <code>weights_init</code> uses the paper's prescribed N(0, 0.02) for conv layers and
+      N(1, 0.02) for BatchNorm. The training loop correctly detaches fake images when updating D
+      (<code>fake_imgs.detach()</code>) and reuses them for the G update. Fixed noise for
+      consistent progression visualisation is good practice.
+    </div>
+  </section>
+
+  <!-- ── CONCLUSION ── -->
+  <section id="conclusion">
+    <div class="part-header">
+      <div class="label">Summary</div>
+      <h2>Conclusion</h2>
+    </div>
+
+    <p>
+      This project implemented and compared three generative model families on two datasets.
+      The VAE demonstrated the value of latent-space regularisation: smooth interpolations and
+      meaningful random samples emerged directly from constraining the posterior toward a standard
+      Gaussian prior. The DCGAN correctly followed the reference architecture but highlighted a
+      fundamental data-size limitation — with only 809 training images, the discriminator
+      memorises the real distribution almost immediately, preventing a stable adversarial
+      equilibrium from forming.
+    </p>
+
+    <table class="conc-table">
+      <thead><tr><th>Finding</th><th>Detail</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>AE latent dimension</td>
+          <td>MSE improves monotonically with latent dim (0.035 → 0.009). dim=32 gives near-perfect MNIST reconstruction; dim=2 is blurry but visualisable.</td>
+        </tr>
+        <tr>
+          <td>AE sampling failure</td>
+          <td>Without prior regularisation, random N(0,I) vectors hit unexplored latent regions, producing incoherent outputs at all tested dimensions.</td>
+        </tr>
+        <tr>
+          <td>VAE improvement</td>
+          <td>KL regularisation fills the latent space, enabling coherent random generation. Smooth spatial organisation visible in 2D latent grids at [−1,1].</td>
+        </tr>
+        <tr>
+          <td>VAE latent range</td>
+          <td>Meaningful digits appear within ±2–3σ. Beyond ±3 the decoder produces blank/blurry output — the prior places negligible mass in the tails.</td>
+        </tr>
+        <tr>
+          <td>DCGAN architecture</td>
+          <td>Correctly implements all DCGAN paper prescriptions: weight init, no BN on first D layer, Tanh/Sigmoid outputs, β₁=0.5 for Adam.</td>
+        </tr>
+        <tr>
+          <td>Discriminator dominance</td>
+          <td>D loss reaches ~0 within 2–3 epochs on all 50-epoch runs. Root cause: 809-image dataset is trivially memorisable. Best HP: lr=0.0001, slope=0.1.</td>
+        </tr>
+        <tr>
+          <td>LeakyReLU vs. ReLU</td>
+          <td>LeakyReLU provides slightly more stable early training; ReLU reaches D dominance faster due to dead neurons reducing discriminator expressiveness.</td>
+        </tr>
+        <tr>
+          <td>Variable name bug</td>
+          <td>The <code>label</code> parameter in <code>train_dcgan</code> is shadowed by the label tensor, printing tensors instead of run names. Cosmetic only.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    wahab-2002 &nbsp;·&nbsp; CSCI 492 Project 4 &nbsp;·&nbsp; April 2026
+    &nbsp;·&nbsp;
+    <a href="https://github.com/wahab-2002/wahab-2002.github.io" style="color:var(--accent)">GitHub</a>
+  </footer>
+
+</div>
+</body>
+</html>
