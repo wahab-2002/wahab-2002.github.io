@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
+<title>Flow Matching and Creative Point-Cloud Generation · Project 2</title>
+<meta content="Undergraduate Project 2: a small flow-matching MLP that moves Gaussian noise into a 6-cluster target and into my own initials logo." name="description"/>
+<style>
+:root{--ink:#222b35;--muted:#5f6973;--accent:#264f7b;--border:#cfd6de}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:var(--ink);font:15px/1.62 Georgia,"Times New Roman",serif}
+a{color:#205b89;text-decoration:underline;text-underline-offset:2px}
+.container{max-width:960px;padding:0 34px;margin:auto}
+.hero{background:#fff;color:var(--ink);padding:56px 0 23px;border-bottom:2px solid #42566b}
+.eyebrow{font:700 12px/1.3 Arial,sans-serif;letter-spacing:.065em;color:#5a6570;margin-bottom:13px}
+.hero h1{font:700 35px/1.18 Georgia,"Times New Roman",serif;letter-spacing:0;margin:0 0 17px;color:#1c2630;max-width:760px}
+.byline{margin:4px 0 9px;font-size:15px;color:#2e3945}
+.subtitle{font-size:14px;font-style:italic;color:#55616c;margin:0 0 6px}
+.nav{background:#fff;border-bottom:1px solid #d9dfe5;position:static}
+.nav .container{display:flex;gap:18px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+.nav a{font:13px/1.3 Arial,sans-serif;color:#45596b;text-decoration:none}
+main{padding:16px 0 54px}
+section{margin:0;padding:27px 0 21px;background:none;border:0;box-shadow:none;border-radius:0;border-bottom:1px solid #e4e8ec}
+section:last-child{border-bottom:0}
+h2{font:700 24px/1.25 Georgia,"Times New Roman",serif;letter-spacing:0;color:#202b37;margin:0 0 13px}
+h3{font:700 18px/1.35 Georgia,"Times New Roman",serif;margin:25px 0 9px;color:#263645}
+h4{font:700 15px/1.35 Georgia,"Times New Roman",serif;margin:6px 0;color:#2b3845}
+p{margin:8px 0 14px}.lead{font-size:15px;color:#303e4a;max-width:100%}
+.table-caption{font:600 12px/1.35 Arial,sans-serif;margin:14px 0 6px;color:#465261}
+.table-wrap{overflow-x:auto;border:0;border-radius:0}
+table{width:100%;border-collapse:collapse;font:13px/1.4 Arial,sans-serif}
+th{background:#f3f5f7;color:#2d3945;text-align:left;font-weight:700;letter-spacing:0;text-transform:none;font-size:13px}
+th,td{padding:8px 9px;border:1px solid #d2d8de;vertical-align:top}tbody tr:nth-child(even){background:#fff}
+.summary-table{max-width:720px}.summary-table th:first-child{width:55%}
+.note{border-left:2px solid #69798a;background:#f8f9fa;padding:11px 14px;border-radius:0;margin:15px 0;color:#35424d}
+.warning{border-left-color:#97835f;background:#fcfbf8}
+.figure{border:0;background:none;text-align:center;border-radius:0;margin:18px 0 21px;padding:0}
+.figure img{display:block;width:auto;max-width:100%;height:auto;margin:auto}
+.figure figcaption{font:12px/1.5 Arial,sans-serif;text-align:left;color:#58636c;margin:9px 0 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:12px 0}
+.insight{border:1px solid #dce2e8;border-radius:0;background:#fff;padding:12px 14px}
+.insight h4{margin:0 0 6px}.insight p{font-size:14px;margin:4px 0}
+.good,.miss{border-top:1px solid #dce2e8}
+.pill{border:1px solid #b7c5d1;background:white;color:#33495d;padding:2px 7px;font-size:11px;border-radius:3px}
+.eq{border:1px solid #d8dee5;background:#f7f8fa;color:#263746;border-radius:0;padding:13px 16px;font:14px/1.7 ui-monospace,Menlo,monospace;overflow-wrap:anywhere}
+.eq .eqside{color:#446b86}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:11px}
+.bad-text{color:#8a422e;font-weight:700}.correct-text{color:#2b6048;font-weight:650}
+.top5{min-width:340px;font-size:12px;line-height:1.6}
+.prediction-table{min-width:950px}.prediction-table .top5{min-width:390px}.prediction-table td,.prediction-table th{padding:6px}
+.figure-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.figure-row figure{padding:5px;margin:0;border:1px solid #d9e0e6;border-radius:0}
+.figure-row img{width:100%;height:auto}.figure-row figcaption{font:12px/1.4 Arial,sans-serif;text-align:center;color:#5b6570;margin-top:6px}
+.score-row{display:grid;grid-template-columns:235px 1fr 70px;align-items:center;gap:10px;margin:12px 0;font-family:Arial,sans-serif;font-size:13px}
+.bartrack{height:11px;background:#edf0f2;border-radius:0;overflow:hidden}.barfill,.barfill.muted,.barfill.low{height:100%;background:#627d96;border-radius:0}
+.score-row .mono{font-weight:600}.footnotes{color:#606b76;font-size:12px}.references p{font-size:12px;margin:6px 0}
+.col-hdr{font:700 11px/1.5 Arial,sans-serif;letter-spacing:0;text-transform:none;color:#586776;margin-bottom:5px}
+@media(max-width:760px){.container{padding:0 18px}.hero{padding:32px 0 19px}.hero h1{font-size:30px}.two-col,.figure-row{grid-template-columns:1fr}.score-row{grid-template-columns:1fr 1fr 62px}.nav .container{gap:12px}section{padding:25px 0 16px}}
+@page{size:A4;margin:16mm 15mm;@bottom-right{content:"Page " counter(page);font:9px Arial,sans-serif;color:#68737e}}
+@media print{
+ .screen-only{display:none}
+ .figure img{max-height:235px}
+ html{scroll-behavior:auto}
+ body{background:white;font-size:12.6px;line-height:1.48}
+ .nav{display:none}
+ .container{max-width:100%;padding:0}
+ .hero{padding:1px 0 13px;border-bottom:1px solid #515d68}
+ .eyebrow{font-size:9px;margin-bottom:6px}
+ .hero h1{font-size:23px;line-height:1.15;margin:0 0 7px}
+ .byline,.subtitle{font-size:10px;margin:3px 0}
+ main{padding:0}
+ section{padding:12px 0 12px;border-bottom:1px solid #e5e8ea;break-inside:auto}
+ h2{font-size:17px;margin:0 0 9px;break-after:avoid}
+ h3{font-size:13px;margin:13px 0 6px;break-after:avoid}
+ h4{font-size:10.5px;break-after:avoid}
+ p{margin:5px 0 8px;orphans:3;widows:3}
+ .lead{font-size:12.6px}
+ table{font-size:10px}th{font-size:10px}td,th{padding:5px 6px}
+ .table-caption{font-size:9px;margin:7px 0 5px}
+ .summary-table{max-width:100%}
+ .two-col{gap:9px;margin:7px 0}
+ .insight{padding:8px 9px;break-inside:avoid}.insight p{font-size:11px}
+ .figure{padding:0;margin:8px 0 11px;break-inside:avoid}
+ .figure img{max-height:215px;object-fit:contain}
+ .figure figcaption{font-size:8.5px;margin:4px 0 0}
+ .figure-row{gap:5px;margin:8px 0}
+ .figure-row figure{padding:3px;break-inside:avoid}
+ .figure-row img{max-height:126px;object-fit:contain}
+ .figure-row figcaption{font-size:8px}
+ .note{padding:6px 9px;margin:8px 0;break-inside:avoid}
+ .eq{padding:8px 9px;font-size:10px}
+ .score-row{margin:6px 0;font-size:9px}.score-row .mono{font-size:9px}
+ .table-wrap{overflow:visible}
+ .prediction-table{min-width:0;width:100%;table-layout:fixed}
+ .prediction-table .top5{min-width:0}
+ .prediction-table td,.prediction-table th{padding:5px 3px;font-size:9px;word-break:break-word}
+ .prediction-table .mono{font-size:8.3px}.prediction-table .top5{font-size:8.8px}
+ .prediction-table th:nth-child(1){width:14%}.prediction-table th:nth-child(2){width:14%}
+ .prediction-table th:nth-child(3){width:17%}.prediction-table th:nth-child(4){width:8%}
+ .prediction-table th:nth-child(5){width:47%}
+ thead{display:table-header-group}tr{break-inside:avoid}
+ .footnotes,.references p{font-size:8.5px}
+ a{color:#264f7b}
+ 
+}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+</style></head><body>
+
+<header class="hero"><div class="container"><div class="eyebrow">Multimodal Models · PROJECT 2 · UNDERGRADUATE REPORT</div>
+<h1>Flow Matching and Creative Point-Cloud Generation</h1>
+<p class="byline">Abdul Wahab Ahmed · University of Mississippi · November 18, 2026</p>
+<p class="subtitle">A 33,794-parameter MLP learns a velocity field that moves Gaussian noise into a six-cluster target and into a logo of my initials that I designed</p></div></header>
+<nav class="nav"><div class="container"><a href="#overview">Introduction</a><a href="#method">Method</a><a href="#part1">Part 1: Learning a flow</a><a href="#part2">Part 2: Logo demo</a><a href="#conclusion">Conclusion</a></div></nav>
+<main class="container">
+
+<section id="overview"><h2>1. Introduction</h2>
+<p class="lead">Flow matching trains a neural network to predict a <strong>velocity</strong> for any point at any time. Following those velocities from random Gaussian noise moves the whole cloud of points into the shape of a target distribution. I trained a small MLP on 2D point coordinates, generated new point clouds with forward Euler steps, animated the learned transport using my own logo as the target, and measured how the number of Euler steps trades sampling cost against distribution quality.</p>
+<figure class="figure screen-only"><img alt="Animation of 3,000 particles moving from Gaussian noise into the four strokes of my AW logo, shown with two color schemes" src="assets/p2_flow_animation.gif"/><figcaption><strong>Animation.</strong> The learned flow moves 3,000 Gaussian particles into my initials logo (100 Euler steps). Left: color = starting position. Right: color = the logo's own color where each particle ends; gray particles end off the logo. Colors are for display only.</figcaption></figure>
+<div class="table-caption">Table 1. Summary of the main results</div>
+<div class="table-wrap"><table class="summary-table"><thead><tr><th>Measurement</th><th>Result</th></tr></thead><tbody>
+<tr><td>Model (both parts)</td><td>MLP 3 → 128 → 128 → 128 → 2, SiLU, 33,794 parameters</td></tr>
+<tr><td>Part 1 training (6 clusters, 20,000 steps)</td><td>24.2 s; final loss 4.69 (does not approach 0, as expected)</td></tr>
+<tr><td>Part 1 learned paths (100 Euler steps)</td><td>mean excess length 0.329 (straight training lines: exactly 0)</td></tr>
+<tr><td>Part 2 training (logo, 50,000 steps)</td><td>54.9 s; final loss 2.83</td></tr>
+<tr><td>Part 2 particles that end on the logo</td><td>89.8% at 100 steps</td></tr>
+<tr><td>Part 2 histogram TV distance to the target</td><td>0.980 (1 step) → 0.182 (10) → 0.120 (25) → 0.104 (100); noise floor 0.047</td></tr>
+</tbody></table></div>
+<p>Beyond about 25 steps, extra steps barely change the result: the remaining gap to the target comes from the learned velocity field, not from the Euler step size.</p></section>
+
+<section id="method"><h2>2. Method</h2>
+<p>Time runs from <strong>t = 0 (noise)</strong> to <strong>t = 1 (data)</strong>. Each training example pairs a noise point x₀ ~ N(0, I) with a target point x₁. Because both are drawn independently, the pairing is random. A time t ~ U[0, 1] is drawn for each pair.</p>
+<div class="eq"><div><span class="eqside">Straight path:</span> x_t = (1 − t)·x₀ + t·x₁</div><div><span class="eqside">Path velocity:</span> u = dx_t/dt = x₁ − x₀</div><div><span class="eqside">Loss:</span> L(θ) = E ‖ v_θ(x_t, t) − (x₁ − x₀) ‖²</div><div><span class="eqside">Euler sampling:</span> z_(k+1) = z_k + Δt · v_θ(z_k, t_k),  z₀ ~ N(0, I),  Δt = 1/K,  t_k = k·Δt</div></div>
+<div class="two-col"><div class="insight"><div class="col-hdr">Model and training</div><h4>Velocity MLP v_θ(x, t)</h4><p>Input: the point's 2 coordinates and t (3 numbers). Output: a 2D velocity. Three hidden layers of width 128 with SiLU activations (33,794 parameters). Adam, learning rate 10⁻³ with cosine decay to 10⁻⁵, batch size 256. The squared error is summed over x and y and averaged over the batch.</p></div><div class="insight"><div class="col-hdr">Sampling and evaluation</div><h4>Forward Euler, fixed-grid histograms</h4><p>Generation starts from fresh Gaussian samples that were never used in training, and the sampler never receives target endpoints. Distribution quality is the total-variation (TV) distance between histograms of generated points and independent target samples on one fixed grid (see Part 2, Task 3).</p></div></div>
+<p class="footnotes">Device: Apple Silicon Mac (macOS 27.2.1, arm64), CPU only, 4 PyTorch threads. Python 3.14.0; PyTorch 2.10.0; NumPy 2.4.2; Matplotlib 3.10.8; Pillow 12.1.1. Seeds: 0 (training), 1 (visualization samples), 2 (Part 1 generation), 3 (Part 2 animation), 4 (held-out evaluation noise), 5 (independent target samples). Measured runtimes: Part 1 notebook 29 s in total (training 24.2 s); Part 2 notebook 95 s in total (training 54.9 s, GIF rendering 12.5 s). All runs used a CPU only.</p></section>
+
+<section id="part1"><h2>3. Part 1: Learning a 2D flow from scratch</h2>
+<h3>Task 1. Source, target, and training pairs</h3>
+<p><strong>Source:</strong> standard 2D Gaussian. <strong>Target:</strong> six equally weighted Gaussian clusters. To sample a point, I pick a cluster c uniformly from 0–5, place its center at 2.5·(cos 2πc/6, sin 2πc/6), and add 0.25·N(0, I) noise. Both distributions use the same coordinate units, and the target lies within about [−3.3, 3.3], a similar scale to the source.</p>
+<figure class="figure"><img alt="Left: blue Gaussian source points and six orange target clusters. Right: forty random noise-target pairs joined by straight lines" src="assets/p1_task1_pairs.png"/><figcaption><strong>Figure 1.</strong> (a) Source and target samples. (b) Forty randomly paired training paths. Each black × is the interpolated point x_t at t = 0.5. Because the pairing is random, many lines cross.</figcaption></figure>
+<p><strong>Why the velocity is constant along each path.</strong> x_t = (1 − t)x₀ + t·x₁ is a linear function of t, so its derivative is dx_t/dt = x₁ − x₀, which contains no t. Every training point moves along a straight line at constant speed, reaching x₁ at exactly t = 1. As a numerical check, a finite difference of x_t at t = 0.1, 0.5, and 0.9 matched x₁ − x₀ to within 10⁻⁹.</p>
+
+<h3>Task 2. Training the velocity model</h3>
+<p>The network receives only the current position x_t and the time t, never x₀ or x₁. It is trained to predict the path velocity x₁ − x₀. Because the pairs are random, many different training lines pass through almost the same (x_t, t) with different velocities, so no function of (x_t, t) can fit all of them. The best a squared-error regression can do is predict their <strong>average</strong>, E[x₁ − x₀ | x_t, t]. The spread around that average is irreducible, so the loss levels off well above zero.</p>
+<figure class="figure"><img alt="Left: training loss drops quickly and plateaus around 4.7. Right: the trained model's error as a function of t" src="assets/p1_task2_loss.png"/><figcaption><strong>Figure 2.</strong> (a) The training loss drops within the first ~1,000 steps and then plateaus at 4.69 (mean of the last 1,000 steps). (b) The trained model's error on 200,000 fresh pairs, grouped by t.</figcaption></figure>
+<p>Figure 2(b) shows where the remaining error comes from. Near t = 0, x_t ≈ x₀ is known but the destination cluster is not, so the error (6.71) is close to the target's spread around its mean (2.5² + 2·0.25² ≈ 6.4). The error peaks around t ≈ 0.23, where neither endpoint can be inferred, and falls once the point's position reveals which cluster it is heading to. Near t = 1 the destination is clear but the starting noise x₀ is not, so the error approaches the Gaussian's total variance of 2 (measured 2.21). The loss is not supposed to reach zero.</p>
+
+<h3>Task 3. Generating new points with the learned field</h3>
+<p>I drew 4,000 fresh Gaussian points (seed 2) and followed the learned field with 100 forward Euler steps, without supplying any target endpoints.</p>
+<figure class="figure"><img alt="Top row: training interpolation clouds at five times. Bottom row: generated clouds at the same times; they look alike" src="assets/p1_task3_snapshots.png"/><figcaption><strong>Figure 3.</strong> Top: the training interpolation x_t from random pairs. Bottom: points generated by the learned field at the same times. The two rows look alike at every time, although (Figure 5) the individual particles follow very different routes.</figcaption></figure>
+<figure class="figure"><img alt="Learned velocity field as arrows at t equals 0, 0.25, 0.5, 0.75 and 0.95" src="assets/p1_task3_field.png"/><figcaption><strong>Figure 4.</strong> Learned velocity field. Arrows show the direction, color shows the speed, and gray dots are the generated particles at that time.</figcaption></figure>
+<p>At t = 0 every arrow points toward the origin. There the network's best guess is E[x₁] − x₀, and the target's mean is the origin, so each point is sent toward the target's average location, not toward any particular cluster. As t increases, the field splits into six basins, and by t = 0.75 particles are pushed outward from the center into the nearest cluster.</p>
+<figure class="figure"><img alt="Left: straight crossing training lines. Right: curved, non-crossing learned trajectories with dashed straight chords" src="assets/p1_task3_paths.png"/><figcaption><strong>Figure 5.</strong> (a) Training paths: random pairs joined by straight lines that cross. (b) Learned sampling trajectories for 60 fresh particles; the dashed lines are straight chords from start to end.</figcaption></figure>
+<p><strong>The learned trajectories are not straight.</strong> Each particle first drifts toward the center (following the averaged direction) and then bends toward one cluster once its position starts to favor one. Measured on the 100-step grid, the mean trajectory length is 1.649 and the mean excess over the straight start-to-end distance is <strong>0.329</strong> (0 for the training lines). Unlike the training lines, the learned trajectories do not cross: they come from following one velocity field, which gives a single direction at each place and time. Straight training paths do not produce straight sampling paths. The training lines only define the average field, and following that average field produces curved routes. As a distribution-level check, the TV distance between 20,000 generated points and 20,000 target samples was 0.099, compared with 0.061 between two independent target samples.</p></section>
+
+<section id="part2"><h2>4. Part 2: Animated demo with my own logo</h2>
+<h3>Task 1. Creative target: my initials logo</h3>
+<p>For the creative target I used a logo of my initials, <strong>A W</strong>, that I designed myself for an earlier typography project: four filled leaf-like strokes with a purple outline and a light-green fill. <strong>Source and permissions:</strong> it is my own original work, so no external material or licenses are involved. I rendered the first page of my logo PDF at 300 dpi and cropped it to the logo (1,046 × 373 pixels).</p>
+<figure class="figure"><img alt="My AW logo, its foreground mask, and 6,000 sampled points" src="assets/p2_task1_target.png"/><figcaption><strong>Figure 6.</strong> (a) Input image. (b) Foreground mask: every pixel that is not close to white (255 − min(R, G, B) &gt; 40), which keeps both the outline and the fill. (c) Sampled target points.</figcaption></figure>
+<p><strong>Sampling rule:</strong> pick one of the 131,299 foreground pixels uniformly at random, add uniform jitter inside that pixel so points are continuous, flip y (image rows grow downward), center the logo at the origin, and scale it so its width is 5.5 units (about [−2.75, 2.75] × [−0.9, 0.9]). I trained the same architecture for 50,000 steps (54.9 s); the loss leveled off at 2.83. I trained longer than in Part 1 because the strokes are thin and close together.</p>
+<figure class="figure"><img alt="Part 2 training loss curve" src="assets/p2_task1_loss.png" style="max-width:520px"/><figcaption><strong>Figure 7.</strong> Part 2 training loss. As in Part 1, it plateaus above zero.</figcaption></figure>
+
+<h3>Task 2. Animating the learned transport</h3>
+<p>I sampled 3,000 new Gaussian particles, moved them through the learned field with 100 Euler steps, and stored every intermediate position, so the animation tracks <strong>the same particles</strong> from noise to logo (animation at the top of this page). Colors are assigned <strong>after sampling</strong> and used <strong>only for drawing</strong>. The network predicts coordinate velocities and never receives a color. I used two color schemes:</p>
+<div class="two-col"><div class="insight"><h4>Source gradient</h4><p>The hue is the angle of the particle's <em>starting</em> point around the origin. In the final frame, red and orange particles end on the left of the logo and blue and cyan particles on the right. Neighboring particles stay neighbors, so the learned flow behaves like a smooth deformation of the noise cloud rather than a shuffle.</p></div><div class="insight"><h4>Endpoint logo colors</h4><p>Each particle takes the logo's color (purple outline or green fill) at the place it <em>ends</em>, and keeps it for the whole animation. Particles that end off the logo are gray. At t = 0 this shows which part of the noise feeds each stroke: the Gaussian is already split into four tilted bands, one per stroke.</p></div></div>
+<figure class="figure"><img alt="Still frames at t = 0, 0.2, 0.4, 0.6, 0.8 and 1.0 for both color schemes" src="assets/p2_task2_frames.png"/><figcaption><strong>Figure 8.</strong> Still frames from the animation. Top: source-gradient colors. Bottom: endpoint logo colors (gray = ends off the logo).</figcaption></figure>
+<p>90.7% of the animated particles end on the logo. Most of the gray particles end in the narrow gaps between neighboring strokes. A smooth velocity field has to split one connected noise cloud into four separate pieces. Particles near the borders between the bands are pulled two ways and stay between the strokes. The animation thus shows a limitation of the small model, not just a pretty picture.</p>
+
+<h3>Task 3. The sampling trade-off: number of Euler steps</h3>
+<p>With the trained weights and the same 20,000 starting Gaussian samples (seed 4) fixed, I compared K = 1, 2, 5, 10, 25, 50, 100, and 200 Euler steps. The number of network evaluations (NFE) equals K. Sampling time is the median of five timed runs of the sampler alone, excluding plotting and rendering.</p>
+<p><strong>Quality check:</strong> I turned each point cloud into a histogram on one fixed 35 × 35 grid covering [−3.5, 3.5]² (cells of 0.2 units), plus one extra bin for points outside that square, so escaped points still count. I then computed the total-variation distance TV = ½ Σ |p − q| to a histogram of 20,000 <em>independent</em> target samples (seed 5). This compares distributions, not individual points. The TV between two independent target samples, 0.047, is the sampling-noise floor. I also report the TV between each K-step result and the 200-step result from the same starting points, which isolates the error caused by the step size.</p>
+<div class="table-caption">Table 2. Euler step count vs. cost and quality (20,000 points; same weights and starting noise for every row)</div>
+<div class="table-wrap"><table><thead><tr><th>Steps K</th><th>NFE</th><th>Sampling time (ms)</th><th>TV vs. target</th><th>TV vs. 200 steps</th><th>On logo</th><th>Outside grid</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>7.0</td><td>0.980</td><td>0.978</td><td>27.1%</td><td>0.0%</td></tr><tr><td>2</td><td>2</td><td>12.7</td><td>0.675</td><td>0.666</td><td>70.1%</td><td>0.0%</td></tr><tr><td>5</td><td>5</td><td>29.5</td><td>0.330</td><td>0.307</td><td>86.8%</td><td>0.0%</td></tr><tr><td>10</td><td>10</td><td>64.2</td><td>0.182</td><td>0.140</td><td>90.1%</td><td>0.0%</td></tr><tr><td>25</td><td>25</td><td>206.6</td><td>0.120</td><td>0.055</td><td>90.2%</td><td>0.0%</td></tr><tr><td>50</td><td>50</td><td>402.4</td><td>0.110</td><td>0.027</td><td>90.0%</td><td>0.0%</td></tr><tr><td>100</td><td>100</td><td>897.6</td><td>0.104</td><td>0.013</td><td>89.8%</td><td>0.0%</td></tr><tr><td>200</td><td>200</td><td>1373.2</td><td>0.102</td><td>0.000</td><td>89.7%</td><td>0.0%</td></tr></tbody></table></div>
+<figure class="figure"><img alt="Final point clouds for 1, 2, 5, 10, 25, 50, 100 and 200 Euler steps" src="assets/p2_task3_steps.png"/><figcaption><strong>Figure 9.</strong> Final point clouds from the same starting points with different numbers of Euler steps, colored by the logo color at each endpoint (gray = off the logo).</figcaption></figure>
+<figure class="figure"><img alt="Left: TV distance vs. NFE with the noise floor. Right: sampling time vs. NFE on log-log axes" src="assets/p2_task3_metrics.png"/><figcaption><strong>Figure 10.</strong> (a) TV distance to the target (blue), TV to the 200-step result (orange, step-size error only), and the sampling-noise floor (dotted). (b) Sampling time grows roughly in proportion to NFE.</figcaption></figure>
+<div class="two-col"><div class="insight miss"><h4>What changes with fewer steps</h4><p>With <strong>one step</strong>, every particle lands near the center (TV 0.980). At t = 0 the field points from each particle toward the target's average location (as in Figure 4), so a single full-length step sends everything there. With 2 and 5 steps the logo appears but is smeared, because each step follows a direction that is only correct at the start of the step. Fewer steps are faster: the cost is about 6.9 ms per step for 20,000 points.</p></div><div class="insight good"><h4>What more steps cannot fix</h4><p>From about 25 steps on, the result barely depends on K: the TV to the 200-step result (0.055 at K = 25) is near the noise floor, while the TV to the target levels off at about 0.104, roughly twice the floor of 0.047. The on-logo fraction plateaus near 89.8%. This remaining error is <strong>model error</strong>: blurred edges and particles stuck between strokes (Figure 9) come from the learned field itself, so smaller steps cannot remove them.</p></div></div>
+<p>Some differences also come from the <strong>target representation and the metric</strong>. The target is a rasterized, cropped image sampled uniformly over non-white pixels, so anti-aliased edge pixels darker than the threshold are part of the target. The 0.2-unit histogram cells are coarser than the logo's outline, so the TV cannot tell outline from fill. The on-logo fraction checks precision more finely, but on its own it would reward samples that collapse onto a small part of the logo, which is why I use it alongside TV and not instead of it. No points left the grid at any step count. For this model, about 25 steps gives nearly the 200-step quality for 15% of the 200-step sampling time.</p></section>
+
+<section id="conclusion"><h2>5. Discussion and Conclusion</h2>
+<p>A 33,794-parameter MLP, trained on a CPU in 24 s (Part 1) and 55 s (Part 2), learned velocity fields that move Gaussian noise into both a six-cluster target and my own logo. The experiments separate three ideas. First, the training targets are straight lines with constant velocity, but because the pairs are random, the network learns their <em>average</em> direction, and the loss stays far above zero. Second, following that averaged field produces <em>curved</em>, non-crossing trajectories whose point clouds still match the training interpolation at every time (Figure 3). Third, the number of Euler steps controls the step-size error, and that error is small by about 25 steps, while the remaining gap to the target comes from what the network learned.</p>
+<div class="note"><strong>Limitations.</strong> All results come from one training seed and one set of held-out starting points per experiment, so small differences (for example, TV 0.110 vs. 0.104 at 50 vs. 100 steps) should not be over-interpreted. Timings come from one CPU and vary from run to run. The histogram TV depends on the chosen grid. Part 3 (reflow, the graduate extension) was outside the undergraduate scope and was not attempted.</div>
+<div class="references"><h3>References</h3><p>Y. Lipman, R. T. Q. Chen, H. Ben-Hamu, M. Nickel, M. Le. <a href="https://arxiv.org/abs/2210.02747">Flow Matching for Generative Modeling</a>. ICLR 2023.</p><p>X. Liu, C. Gong, Q. Liu. <a href="https://arxiv.org/abs/2209.03003">Flow Straight and Fast: Learning to Generate and Transfer Data with Rectified Flow</a>. ICLR 2023.</p><p>Y. Lipman et al. <a href="https://arxiv.org/abs/2412.06264">Flow Matching Guide and Code</a>. 2024.</p><p>The code notebooks are submitted privately with the course assignment; this public website contains only the report and its figures. The logo is my own design.</p></div></section>
+</main></body></html>
